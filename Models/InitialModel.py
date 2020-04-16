@@ -29,8 +29,21 @@ class InitialModel:
                 self.reward[destination] = 0
             else:
                 self.reward[destination] = 1
-        self.simulate(0.5,0.9)
-        # self.visits_df[destination][origin][aim]
+        self.policyString = ''
+        self.model_based(self.utility.copy(), 0.5, 0.9, 0.05)
+
+    # threshold is the convergence threshold for utility. If a state's utility changes by more than this then keep learning
+    def model_based(self,prev_utility,explore_probability,discount_value,threshold):
+        new_utility = self.simulate(explore_probability,discount_value)
+        rerun = False
+        for state in prev_utility:
+            if np.abs(prev_utility[state]-new_utility[state]) > threshold:
+                rerun = True
+                break
+        if rerun:
+            self.model_based(new_utility.copy(),explore_probability,discount_value,threshold)
+        else:
+            self.policy()
 
     def simulate(self, explore_probability, discount_value):
         cur_state = 'Fairway'
@@ -50,11 +63,10 @@ class InitialModel:
                 else:
                     chosen_path = shot
                     break
-
-            self.visits_df[chosen_path.destination][cur_state][chosen_path.aim] += 1
-            self.utility[chosen_path.destination] = self.reward[chosen_path.destination]+discount_value*self.exploit(cur_state)[1]
+            self.visits_df.at[(cur_state,chosen_path.aim),chosen_path.destination] += 1
+            self.utility[cur_state] = self.reward[cur_state] + discount_value*self.exploit(cur_state)[1]
             cur_state = chosen_path.destination
-            print(cur_state)
+        return self.utility
             # update count, reward, and calculate utility
 
     def explore(self, cur_state):
@@ -65,7 +77,7 @@ class InitialModel:
         aim_options = np.unique([x.aim for x in self.shots if x.origin == cur_state])
 
         # stores the best aim option and the value associated with it
-        best_option = ('',-1)
+        best_option = ('',1000)
         for aim in aim_options:
             possible_destinations = np.unique([x.destination for x in self.shots if x.origin == cur_state and x.aim==aim])
             aim_value = 0
@@ -74,11 +86,15 @@ class InitialModel:
                     aim_value += 0
                 else:
                     aim_value += (self.visits_df[destination][cur_state][aim]/self.visits_df.sum(axis=1)[cur_state][aim])*self.utility[destination]
-            if aim_value > best_option[1]:
+            if aim_value < best_option[1]:
                 best_option = (aim, aim_value)
         return best_option
+    def policy(self):
+        for state in self.utility:
+            if state != 'In':
+                self.policyString += 'In state: ' + state + " the recommended shot type is: " + self.exploit(state)[0] +'\n'
 
     def __repr__(self):
-        return "hello"
+        return self.policyString
         #return "Unique origins:\n\t" + str(self.origins) + "\nUnique Destinations:\n\t" + str(self.destinations) + \
         #       "\nUnique aims:\n\t" + str(self.aims) + "\nShots:\n" + str(self.shots)
