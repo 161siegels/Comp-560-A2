@@ -30,7 +30,7 @@ class InitialModel:
             else:
                 self.reward[destination] = 1
         self.policyString = ''
-        self.model_based(self.utility.copy(), 0.5, 0.9, 0.05)
+        self.model_based(self.utility.copy(), 0.5, 0.9, 0.001)
 
     # threshold is the convergence threshold for utility. If a state's utility changes by more than this then keep learning
     def model_based(self,prev_utility,explore_probability,discount_value,threshold):
@@ -77,7 +77,7 @@ class InitialModel:
         aim_options = np.unique([x.aim for x in self.shots if x.origin == cur_state])
 
         # stores the best aim option and the value associated with it
-        best_option = ('',1000)
+        best_option = ('', np.inf)
         for aim in aim_options:
             possible_destinations = np.unique([x.destination for x in self.shots if x.origin == cur_state and x.aim==aim])
             aim_value = 0
