@@ -24,8 +24,8 @@ class InitialModel:
             self.utility[origin] = 0
         for destination in self.destinations:
             self.utility[destination] = 0
+        print([x for x in self.shots if x.origin == 'Fairway' and x.aim=='At'])
         # self.visits_df[destination][origin][aim]
-        print(self.visits_df.sum(axis=1)['Fairway'].idxmin())
         #self.simulate()
 
 
@@ -41,7 +41,7 @@ class InitialModel:
                 action = self.explore(cur_state)
 
 
-            options = [x for x in self.shots if x.origin == cur_state and x.aim=action]
+            options = [x for x in self.shots if x.origin == cur_state and x.aim==action]
             rand_number = np.random.rand()
             count = 0
             chosen_path = {}
@@ -51,7 +51,7 @@ class InitialModel:
                 else:
                     chosen_path = shot
                     break
-            
+            #update count, reward, and calculate utility
 
     def explore(self, cur_state):
         aim_options = [x.aim for x in self.shots if x.origin == cur_state]
