@@ -30,7 +30,7 @@ class InitialModel:
             else:
                 self.reward[destination] = 1
         self.policyString = ''
-        self.model_based(self.utility.copy(), 0.5, 0.9, 0.001)
+        self.model_based(self.utility.copy(), 1, 0.9, 0.001)
 
     # threshold is the convergence threshold for utility. If a state's utility changes by more than this then keep learning
     def model_based(self,prev_utility,explore_probability,discount_value,threshold):
@@ -41,7 +41,7 @@ class InitialModel:
                 rerun = True
                 break
         if rerun:
-            self.model_based(new_utility.copy(),explore_probability,discount_value,threshold)
+            self.model_based(new_utility.copy(), explore_probability*.99, discount_value, threshold)
         else:
             self.policy()
 
@@ -89,6 +89,7 @@ class InitialModel:
             if aim_value < best_option[1]:
                 best_option = (aim, aim_value)
         return best_option
+
     def policy(self):
         for state in self.utility:
             if state != 'In':
