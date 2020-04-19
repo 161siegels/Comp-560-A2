@@ -11,7 +11,7 @@ def read_from_file(file_name: str):
     ]
 
     for line in file:
-        
+
         shot_types_iterator = iter(shot_types)
         new_shot = {}
 
