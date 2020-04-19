@@ -18,10 +18,12 @@ class ModelFree:
         self.state_aim_utilities = {}
 
     def controller(self):
+        results = []
         for i in range(100):
             empty_states = VisitedStates()
             visited_states = self.getStateUtilities(random.choice(list(self.origins)), empty_states)
-            self.updateAvgUtilities(visited_states)
+            results += visited_states.visited_states
+        self.updateAvgUtilities(results)
         print(self.state_aim_utilities)
 
     def getStateUtilities(self, starting_state, visited_states):
@@ -40,10 +42,10 @@ class ModelFree:
             return self.getStateUtilities(chosen_shot.destination, visited_states=visited_states)
 
     def updateAvgUtilities(self, visited_states):
-        for s in visited_states.visited_states:
+        for s in visited_states:
             if (s.state, s.aim) not in self.state_aim_utilities.keys():
                 self.state_aim_utilities[(s.state, s.aim)] = \
-                    stats.mean([x.shots for x in visited_states.visited_states if x.state == s.state and x.aim == s.aim])
+                    stats.mean([x.shots for x in visited_states if x.state == s.state and x.aim == s.aim])
 
     def endingState(self, state) -> bool:
         return True if state == 'In' else False
