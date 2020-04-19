@@ -19,6 +19,7 @@ def runModelBased():
 
 def runModelFree():
     model_free = ModelFree(shots)
+    model_free.controller()
 
 
 if __name__ == '__main__':
