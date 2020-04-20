@@ -10,7 +10,7 @@ shots = read_from_file(filename)
 
 def main():
     runModelFree()
-
+    runModelBased()
 
 def runModelBased():
     initial_model = InitialModel(shots)

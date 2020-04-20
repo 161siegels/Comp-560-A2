@@ -29,21 +29,26 @@ class InitialModel:
                 self.reward[destination] = 0
             else:
                 self.reward[destination] = 1
-        self.model_based(self.utility.copy(), 1, 0.9, 0.001)
-        # print(len((self.visits_df.sum(axis=1)['Fairway'][['At','Past']]==0)))
+
+        self.model_based(self.utility.copy(), 1, 0.95, 0.001,0)
 
     # threshold is the convergence threshold for utility. If a state's utility changes by more than this then keep learning
-    def model_based(self,prev_utility,explore_probability,discount_value,threshold):
+    # iterations checks how many iterations in a row the utility has changed by less than threshold. Need 3 for us
+    # to deem convergence
+    def model_based(self,prev_utility,explore_probability,discount_value,threshold,iterations):
         new_utility = self.simulate(explore_probability,discount_value)
         rerun = False
         for state in prev_utility:
-            if np.abs(prev_utility[state]-new_utility[state]) > threshold:
+            if (np.abs(prev_utility[state]-new_utility[state]) > threshold):
                 rerun = True
+                iterations = 0
                 break
-        if rerun:
-            self.model_based(new_utility.copy(), explore_probability, discount_value, threshold)
-        else:
-            self.policy()
+        if not rerun:
+            iterations+=1
+        # Want to run the simulation at least 10 times so that is why we make sure explore_prob > 0.9
+        if rerun or iterations<3 or explore_probability>0.9:
+            self.model_based(new_utility.copy(), explore_probability*.995, discount_value, threshold,iterations)
+
 
     def simulate(self, explore_probability, discount_value):
         cur_state = 'Fairway'
@@ -93,13 +98,14 @@ class InitialModel:
         return best_option
 
     def policy(self):
-        print(self.visits_df)
+        print(self.utility)
         policyString=''
         for state in self.utility:
             if state != 'In':
                 policyString += 'In state: ' + state + " the recommended shot type is: " + self.exploit(state)[0] +'\n'
-        return policyString
-
+        policyString += 'Here is the probability transition table ' \
+                        '(the left side indicates the origin and aim, column shows destination:\n'
+        return policyString + self.visits_df.div(self.visits_df.sum(axis=1), axis=0).dropna().to_string()
     def __repr__(self):
         return self.policy()
         #return "Unique origins:\n\t" + str(self.origins) + "\nUnique Destinations:\n\t" + str(self.destinations) + \
