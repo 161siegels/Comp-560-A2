@@ -45,8 +45,8 @@ class InitialModel:
                 break
         if not rerun:
             iterations+=1
-        # Want to run the simulation at least 10 times so that is why we make sure explore_prob > 0.9
-        if rerun or iterations<3 or explore_probability>0.9:
+        # Want to run the simulation at least 10 times
+        if rerun or iterations<3 or explore_probability>(.995**10):
             self.model_based(new_utility.copy(), explore_probability*.995, discount_value, threshold,iterations)
 
 
