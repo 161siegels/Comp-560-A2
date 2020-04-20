@@ -104,7 +104,7 @@ class InitialModel:
             if state != 'In':
                 policyString += 'In state: ' + state + " the recommended shot type is: " + self.exploit(state)[0] +'\n'
         policyString += 'Here is the probability transition table ' \
-                        '(the left side indicates the origin and aim, column shows destination:\n'
+                        '(the left side indicates the origin and aim, column shows destination):\n'
         return policyString + self.visits_df.div(self.visits_df.sum(axis=1), axis=0).dropna().to_string()
     def __repr__(self):
         return self.policy()
