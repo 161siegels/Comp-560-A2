@@ -4,3 +4,6 @@
 * Place text files in `Files` directory
 * Run program from top directory with `python3 main.py [TEXT FILE NAME]`
   * For example: `python3 main.py testfile.txt`
+  
+### Notes:
+* Requires Python 3 and Pandas
