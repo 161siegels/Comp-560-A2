@@ -7,7 +7,9 @@ from Models.StateShots import StateShots
 from Models.VisitedStates import VisitedStates
 
 CHANGE_THRESHOLD = 0.001
+MAX_ITERATIONS = 250
 STARTING_STATE = 'Fairway'
+ENDING_STATE = 'In'
 
 
 class ModelFree:
@@ -45,13 +47,12 @@ class ModelFree:
             if not self.metChangeThreshold(og_state_aim_utilities, i):
                 break
 
-        print("State/Action pairs:")
+        output = "State/Action pairs:\n"
 
         for utility in {k: v for k, v in sorted(self.state_aim_utilities.items(), key=lambda item: item[1], reverse=True)}:
-            print("\t" + str(utility[0]) + " / " + str(utility[1]) + ": " + str(self.state_aim_utilities[utility]))
+            output += "\t" + str(utility[0]) + " / " + str(utility[1]) + ": " + str(self.state_aim_utilities[utility]) + "\n"
 
-        print("Still unknown: " + str(unknown_aims))
-        print(str(i) + " runs")
+        return output
 
     def metChangeThreshold(self, original_state_aim_utilities, iterations):
         og_utilities = list(original_state_aim_utilities.values())
@@ -62,17 +63,18 @@ class ModelFree:
         # Continues if there is a newly discovered state,
         # or the change threshold was surpassed,
         # or there are still discovered states
-        return len(original_state_aim_utilities) != len(self.state_aim_utilities) or \
-               abs(sum([x[0] - x[1] for x in zip(new_values, og_utilities)])) >= CHANGE_THRESHOLD or \
-               len(unknown_aims) > 0
+        return (len(original_state_aim_utilities) != len(self.state_aim_utilities) or
+               abs(sum([x[0] - x[1] for x in zip(new_values, og_utilities)])) >= CHANGE_THRESHOLD or
+               len(unknown_aims) > 0) and iterations < MAX_ITERATIONS
 
     def getStateUtilities(self, starting_state, visited_states):
         possible_aims = [x.aim for x in self.shots if x.origin == starting_state]
         known_aim_utilities = [x for x in self.state_aim_utilities.keys() if x[0] == starting_state]
+        unknown_aims = list(set([x for x in possible_aims if x not in [y[1] for y in known_aim_utilities]]))
         chosen_aim = None
 
-        # if we random number less than explore probability
-        if random.random() < self.explore_probability or len(known_aim_utilities) == 0:
+        # if random() produces a random number less than explore probability or there are still unknown aims
+        if random.random() < self.explore_probability or len(unknown_aims) > 0:
             # get a list of options that have not been discovered
             unknown_aims = list(set([x for x in possible_aims if x not in [y[1] for y in known_aim_utilities]]))
 
@@ -93,7 +95,7 @@ class ModelFree:
         chosen_shot = random.choices(possible_shots, cum_weights=destination_probabilities)[0]
 
         visited_states.states.append(StateShots(chosen_shot.origin, chosen_shot.aim))
-        visited_states.incrememntAllStates()
+        visited_states.incrementAllStates()
 
         # Stop if we've reached "In", keep going if not
         return visited_states if self.endingState(chosen_shot.destination) \
@@ -105,7 +107,7 @@ class ModelFree:
                 stats.mean([x.shots for x in visited_states if x.state == s.state and x.aim == s.aim])
 
     def endingState(self, state):
-        return state == 'In'
+        return state == ENDING_STATE
 
     def __repr__(self):
         return "Unique origins:\n\t" + str(self.origins) + "\nUnique Destinations:\n\t" + str(self.destinations) + \

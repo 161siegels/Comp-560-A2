@@ -9,8 +9,11 @@ shots = read_from_file(filename)
 
 
 def main():
+    print("Model Free:")
     runModelFree()
+    print("Model Based:")
     runModelBased()
+
 
 def runModelBased():
     initial_model = InitialModel(shots)
@@ -19,7 +22,8 @@ def runModelBased():
 
 def runModelFree():
     model_free = ModelFree(shots)
-    model_free.learn()
+    output = model_free.learn()
+    print(output)
 
 
 if __name__ == '__main__':

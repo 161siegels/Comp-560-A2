@@ -8,7 +8,7 @@ class VisitedStates:
     def __init__(self):
         self.states: List[StateShots] = []
 
-    def incrememntAllStates(self):
+    def incrementAllStates(self):
         for s in self.states:
             s.incrementShot()
 
